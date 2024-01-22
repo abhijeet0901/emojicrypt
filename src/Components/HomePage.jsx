@@ -7,17 +7,26 @@ function HomePage() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
 
-  const emojiMapping = {
-    A: "😊",
-    B: "😂",
-    C: "😃",
-    // Add more mappings as needed
-  };
+ const emojiMapping = {
+   A: "😊",
+   B: "😂",
+   C: "😃",
+   // Add more mappings for alphanumeric characters as needed
+   1: "🔴",
+   2: "🔵",
+   3: "🟢",
+ };
 
-  const reverseEmojiMapping = {};
-  Object.keys(emojiMapping).forEach((key) => {
-    reverseEmojiMapping[emojiMapping[key]] = key;
-  });
+ const textMapping = {
+   "😊": "A",
+   "😂": "B",
+   "😃": "C",
+   // Add more mappings for alphanumeric characters as needed
+   "🔴": "1",
+   "🔵": "2",
+   "🟢": "3",
+ };
+  
 
   const handleEncryptionChange = (isDecrypt) => {
     if (isDecrypt) {
@@ -39,14 +48,17 @@ function HomePage() {
     }
     setOutputText(encrypted);
   };
+  const reversedTextMapping = {};
+  Object.entries(textMapping).forEach(([char, emoji]) => {
+    reversedTextMapping[emoji] = char;
+  });
 
   const decryptText = () => {
     let decrypted = "";
-    for (let i = 0; i < inputText.length; i++) {
-      const emoji = inputText[i];
-      const char = reverseEmojiMapping[emoji] || emoji;
-      decrypted += char;
-    }
+    
+    const inputArr = Array.from(inputText);
+    inputArr && inputArr.map((emoji) => (decrypted += textMapping[emoji]));
+    console.log(decrypted);
     setOutputText(decrypted);
   };
 
@@ -142,9 +154,8 @@ function HomePage() {
         </div>
       )}
       <div className="result">
-        <strong>
-          {activeTab === "decrypt" ? "Decrypted Text:" : "Encrypted Text:"}
-        </strong>{" "}
+        <strong>{activeTab === "decrypt" ? "Decrypted Text:" : ""}</strong>{" "}
+        <strong>{activeTab === "encrypt" ? "Encrypted Text:" : ""}</strong>{" "}
         {outputText}
       </div>
     </div>
