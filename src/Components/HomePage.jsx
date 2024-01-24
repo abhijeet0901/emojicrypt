@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import arrow from "./assets/arrow.png";
 import "./HomePage.css";
 
@@ -6,27 +6,32 @@ function HomePage() {
   const [activeTab, setActiveTab] = useState("encrypt");
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+   const [showPassword, setShowPassword] = useState(false);
 
- const emojiMapping = {
-   A: "😊",
-   B: "😂",
-   C: "😃",
-   // Add more mappings for alphanumeric characters as needed
-   1: "🔴",
-   2: "🔵",
-   3: "🟢",
- };
+   const togglePasswordVisibility = () => {
+     setShowPassword(!showPassword);
+   };
+  const emojiMapping = {
+    A: "😊",
+    B: "😂",
+    C: "😃",
+    // Add more mappings for alphanumeric characters as needed
+    1: "🔴",
+    2: "🔵",
+    3: "🟢",
+  };
 
- const textMapping = {
-   "😊": "A",
-   "😂": "B",
-   "😃": "C",
-   // Add more mappings for alphanumeric characters as needed
-   "🔴": "1",
-   "🔵": "2",
-   "🟢": "3",
- };
-  
+  const textMapping = {
+    "😊": "A",
+    "😂": "B",
+    "😃": "C",
+    // Add more mappings for alphanumeric characters as needed
+    "🔴": "1",
+    "🔵": "2",
+    "🟢": "3",
+  };
 
   const handleEncryptionChange = (isDecrypt) => {
     if (isDecrypt) {
@@ -39,26 +44,75 @@ function HomePage() {
   };
 
   const encryptText = () => {
+    setInputText("");
+    setOutputText("");
+
+    // Clear the password input
+    setPassword("");
+
+
+    const localData = JSON.parse(localStorage.getItem("EmojicryptData")) || [];
+    if (!password || password.trim() === "") {
+      setErrorMessage("Password is required for encrypting the emoji.");
+      return;
+    }
+
+    // Reset error message
+    setErrorMessage("");
     let encrypted = "";
-    console.log(inputText);
     for (let i = 0; i < inputText.length; i++) {
       const char = inputText[i].toUpperCase();
       const emoji = emojiMapping[char] || char;
       encrypted += emoji;
     }
+    // Find the index of the entry with the same password
+    const existingIndex = localData.findIndex(
+      (entry) => Object.keys(entry)[0] === password
+    );
+
+    // If the password exists, update the entry; otherwise, add a new entry
+    if (existingIndex !== -1) {
+      localData[existingIndex][password] = {
+        text: inputText,
+        emoji: encrypted,
+      };
+    } else {
+      localData.push({ [password]: { text: inputText, emoji: encrypted } });
+    }
+
     setOutputText(encrypted);
+
+    localStorage.setItem("EmojicryptData", JSON.stringify(localData));
+    console.log(JSON.parse(localStorage.getItem("EmojicryptData")));
   };
-  const reversedTextMapping = {};
-  Object.entries(textMapping).forEach(([char, emoji]) => {
-    reversedTextMapping[emoji] = char;
-  });
 
   const decryptText = () => {
+    setInputText("");
+    setOutputText("");
+
+    // Clear the password input
+    setPassword("");
+
+    const localData = JSON.parse(localStorage.getItem("EmojicryptData")) || [];
     let decrypted = "";
-    
-    const inputArr = Array.from(inputText);
-    inputArr && inputArr.map((emoji) => (decrypted += textMapping[emoji]));
-    console.log(decrypted);
+     if (!password || password.trim() === "") {
+       setErrorMessage("Password is required for decrypting the emoji.");
+       return;
+     }
+
+     // Reset error message
+     setErrorMessage("");
+    // Assuming inputText contains the password for decryption
+    const passwordMatch = localData.find(
+      (entry) => Object.keys(entry)[0] === password
+    );
+
+    if (passwordMatch) {
+      decrypted = passwordMatch[password].text;
+    } else {
+      decrypted = "Invalid password or no data found.";
+    }
+
     setOutputText(decrypted);
   };
 
@@ -110,13 +164,19 @@ function HomePage() {
           </div>
           <div className="text-container">
             <span className="text">2. Type a password</span>
-            <textarea
+            <input
               placeholder="Enter the password"
               name="textarea"
-              id=""
-              cols="30"
-              rows="10"
-            ></textarea>
+              type={showPassword ? "text" : "password"}
+              onChange={(e) => setPassword(e.target.value)}
+            ></input>
+            <span
+              style={{ cursor: "pointer", marginLeft: "5px" }}
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? "👁️" : "🔒"}
+            </span>
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
           </div>
           <div className="text-container">
             <span className="text">Decrypt Emojis</span>
@@ -137,13 +197,19 @@ function HomePage() {
           </div>
           <div className="text-container">
             <span className="text">2. Set a password</span>
-            <textarea
-              placeholder="Create your password"
-              name="textarea"
-              id=""
-              cols="30"
-              rows="10"
-            ></textarea>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <span
+              style={{ cursor: "pointer", marginLeft: "5px" }}
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? "👁️" : "🔒"}
+            </span>
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
           </div>
           <div className="text-container">
             <span className="text">Encrypt message</span>

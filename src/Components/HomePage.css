@@ -42,8 +42,14 @@
 .text {
   color: rgb(110, 110, 110) !important;
 }
-
 .text-container textarea {
+  width: 350px;
+  background-color: #1c1c1c;
+  height: 50px;
+  border-radius: 6px;
+  border-color: rgba(110, 110, 110, 0.5);
+}
+.text-container input {
   width: 350px;
   background-color: #1c1c1c;
   height: 50px;
